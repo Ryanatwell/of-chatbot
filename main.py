@@ -23,7 +23,7 @@ def webhook():
     msg = data['message']['text']
 
     response = client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You're a seductive, sales-focused OF assistant."},
             {"role": "user", "content": msg}
