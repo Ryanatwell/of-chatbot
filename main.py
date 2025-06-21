@@ -1,21 +1,28 @@
 from flask import Flask, request
-import openai
+from openai import OpenAI
 import telegram
-
 import os
-openai.api_key = os.getenv("OPENAI_API_KEY")
-bot = telegram.Bot(token=os.getenv("TELEGRAM_BOT_TOKEN"))
 
+# Load API keys
+openai_api_key = os.getenv("OPENAI_API_KEY")
+telegram_bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+
+client = OpenAI(api_key=openai_api_key)
+bot = telegram.Bot(token=telegram_bot_token)
 
 app = Flask(__name__)
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
     data = request.json
+
+    if 'message' not in data:
+        return "No message", 200
+
     chat_id = data['message']['chat']['id']
     msg = data['message']['text']
 
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4",
         messages=[
             {"role": "system", "content": "You're a seductive, sales-focused OF assistant."},
@@ -23,11 +30,10 @@ def webhook():
         ]
     )
 
-    reply = response['choices'][0]['message']['content']
+    reply = response.choices[0].message.content
     bot.send_message(chat_id=chat_id, text=reply)
-    return "ok"
 
-import os
+    return "ok", 200
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
